@@ -1,32 +1,35 @@
-using CMS.Backend.Models;
+﻿using CMS.Data;
+using CMS.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Backend.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        // Tiêm DbContext vào Controller
+        public HomeController(ApplicationDbContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            return View();
+            // LINQ: Lấy 3 bài viết mới nhất
+            var latestPosts = _context.Posts
+                .Include(p => p.Category)          // Lấy kèm tên danh mục
+                .OrderByDescending(p => p.CreatedDate) // Sắp xếp mới nhất lên đầu
+                .Take(3)                            // Chỉ lấy 3 bản tin đầu tiên
+                .ToList();
+
+            return View(latestPosts);
         }
 
         public IActionResult Privacy()
         {
             return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

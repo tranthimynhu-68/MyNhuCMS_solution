@@ -1,63 +1,168 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using CMS.Data.Entities; // Quan trọng: Phải có dòng này để dùng lớp Post
+using Microsoft.EntityFrameworkCore;
+using CMS.Data;
+using CMS.Data.Entities;
 
 namespace CMS.Backend.Controllers
 {
     public class PostController : Controller
     {
-        // Hàm Index: Hiển thị danh sách bài viết mẫu
-        public IActionResult Index()
-        {
-            // 1. Tạo dữ liệu giả (Mock Data) cho Bài viết
-            var posts = new List<Post>
-            {
-                new Post
-                {
-                    Id = 1,
-                    Title = "Lộ trình học ASP.NET Core cho người mới",
-                    Content = "Nội dung bài viết về lộ trình học .NET...",
-                    ImageUrl = "https://via.placeholder.com/150",
-                    CreatedDate = DateTime.Now
-                },
-                new Post
-                {
-                    Id = 2,
-                    Title = "ReactJS và WebAPI: Xu hướng Fullstack 2026",
-                    Content = "Nội dung bài viết về sự kết hợp React và API...",
-                    ImageUrl = "https://via.placeholder.com/150",
-                    CreatedDate = DateTime.Now.AddDays(-1)
-                },
-                new Post
-                {
-                    Id = 3,
-                    Title = "Hướng dẫn cài đặt môi trường Visual Studio",
-                    Content = "Các bước cài đặt công cụ cần thiết cho lập trình viên...",
-                    ImageUrl = "https://via.placeholder.com/150",
-                    CreatedDate = DateTime.Now.AddDays(-2)
-                }
-            };
+        private readonly ApplicationDbContext _context;
 
-            // 2. Gửi danh sách dữ liệu sang View
+        public PostController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        // ========== 1. HIỂN THỊ DANH SÁCH (INDEX) ==========
+        public IActionResult Index(int? id)
+        {
+            if (id == null)
+            {
+                var allPosts = _context.Posts
+                    .OrderByDescending(p => p.CreatedDate)
+                    .Include(p => p.Category)
+                    .ToList();
+
+                ViewBag.CategoryName = "TẤT CẢ BÀI VIẾT";
+                return View(allPosts);
+            }
+
+            var category = _context.Categories.FirstOrDefault(c => c.Id == id);
+            if (category == null)
+            {
+                return NotFound("Không tìm thấy danh mục với Id = " + id);
+            }
+
+            var posts = _context.Posts
+                .Where(p => p.CategoryId == id)
+                .OrderByDescending(p => p.CreatedDate)
+                .Include(p => p.Category)
+                .ToList();
+
+            ViewBag.CategoryName = category.Name;
             return View(posts);
         }
 
-        // Hàm Details: Hiển thị chi tiết một bài viết (Bổ sung  khá giỏi)
+        // ========== 2. HIỂN THỊ CHI TIẾT (DETAILS) ==========
         public IActionResult Details(int id)
         {
-            // Giả lập tìm bài viết trong Database bằng Id
-            // Trong thực tế tuần sau sẽ là: _context.Posts.Find(id);
-            var post = new Post
-            {
-                Id = id,
-                Title = "Nội dung chi tiết bài viết số " + id,
-                Content = "Đây là nội dung đầy đủ của bài viết mà bạn vừa click vào. Ở đây  có thể viết dài hơn để thấy sự khác biệt với trang danh sách.",
-                ImageUrl = "https://via.placeholder.com/600x300", // Ảnh to hơn
-                CreatedDate = DateTime.Now
-            };
+            var post = _context.Posts
+                .Include(p => p.Category)
+                .FirstOrDefault(p => p.Id == id);
 
-            if (post == null) return NotFound();
+            if (post == null)
+            {
+                return NotFound("Không tìm thấy bài viết với Id = " + id);
+            }
 
             return View(post);
+        }
+
+        // ========== 3. HIỂN THỊ FORM THÊM MỚI (CREATE - GET) ==========
+        [HttpGet]
+        public IActionResult Create()
+        {
+            // Lấy danh sách danh mục để hiển thị trong dropdown
+            ViewBag.Categories = _context.Categories.ToList();
+            return View();
+        }
+
+        // ========== 4. XỬ LÝ THÊM MỚI (CREATE - POST) ==========
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Post post)
+        {
+            if (ModelState.IsValid)
+            {
+                post.CreatedDate = DateTime.Now;
+                _context.Posts.Add(post);
+                _context.SaveChanges();
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewBag.Categories = _context.Categories.ToList();
+            return View(post);
+        }
+
+        // ========== 5. HIỂN THỊ FORM SỬA (EDIT - GET) ==========
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var post = _context.Posts.Find(id);
+            if (post == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Categories = _context.Categories.ToList();
+            return View(post);
+        }
+
+        // ========== 6. XỬ LÝ SỬA (EDIT - POST) ==========
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(int id, Post post)
+        {
+            if (id != post.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Giữ nguyên ngày tạo cũ
+                    var existingPost = _context.Posts.AsNoTracking().FirstOrDefault(p => p.Id == id);
+                    post.CreatedDate = existingPost.CreatedDate;
+
+                    _context.Update(post);
+                    _context.SaveChanges();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Posts.Any(e => e.Id == id))
+                    {
+                        return NotFound();
+                    }
+                    throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewBag.Categories = _context.Categories.ToList();
+            return View(post);
+        }
+
+        // ========== 7. HIỂN THỊ FORM XÓA (DELETE - GET) ==========
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            var post = _context.Posts
+                .Include(p => p.Category)
+                .FirstOrDefault(p => p.Id == id);
+
+            if (post == null)
+            {
+                return NotFound();
+            }
+
+            return View(post);
+        }
+
+        // ========== 8. XỬ LÝ XÓA (DELETE - POST) ==========
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var post = _context.Posts.Find(id);
+            if (post != null)
+            {
+                _context.Posts.Remove(post);
+                _context.SaveChanges();
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

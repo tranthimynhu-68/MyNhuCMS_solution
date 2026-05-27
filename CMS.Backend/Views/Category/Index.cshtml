@@ -1,22 +1,49 @@
 ﻿@model IEnumerable<CMS.Data.Entities.Category>
 
-<h2 class="text-primary">DANH SÁCH DANH MỤC (DỮ LIỆU MẪU)</h2>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Tên danh mục</th>
-            <th>Mô tả</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+@{
+    ViewData["Title"] = "Danh sách danh mục";
+}
+
+<div class="container mt-4">
+    <h2 class="text-primary">📁 DANH SÁCH DANH MỤC (DỮ LIỆU THẬT LẤY TỪ DATABASE)</h2>
+    <hr />
+
+    <div class="mb-3">
+        <a href="/Category/Create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Thêm danh mục mới
+        </a>
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+
             <tr>
-                <td>@item.Id</td>
-                <td>@item.Name</td>
-                <td>@item.Description</td>
+                <th>ID</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th style="width: 150px;">Thao tác</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id"
+                           class="btn btn-sm btn-outline-warning">
+                            ✏️ Sửa
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.Id"
+                           class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục @item.Name không?')">
+                            🗑️ Xóa
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
