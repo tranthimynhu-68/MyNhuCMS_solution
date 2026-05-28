@@ -1,8 +1,10 @@
 ﻿using CMS.Data; // Kết nối tới lớp dữ liệu
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CMS.Backend.Controllers
 {
+    [Authorize]
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;

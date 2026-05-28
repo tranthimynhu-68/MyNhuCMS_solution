@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ThaiCMS Admin</title>
+    <title>@ViewData["Title"] - NhuCMS Admin</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
@@ -29,14 +29,44 @@
                 background-color: #0d6efd;
                 color: white;
             }
+
+        .navbar-top {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2c3e50 100%);
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-radius: 0;
+            color: white;
+        }
+
+        .user-info {
+            color: #adb5bd;
+            transition: 0.3s;
+        }
+
+            .user-info:hover {
+                color: white;
+            }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #0d6efd;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
+            <!-- Sidebar -->
             <nav class="col-md-3 col-lg-2 sidebar p-0">
                 <div class="p-3 text-center border-bottom border-secondary">
                     <h4 class="text-white">NhuCMS Admin</h4>
+                    <small class="text-muted">Quản trị hệ thống</small>
                 </div>
                 <div class="mt-3">
                     <a asp-controller="Home" asp-action="Index">
@@ -67,11 +97,58 @@
                         <i class="bi bi-grid"></i> Đơn hàng chi tiết
                     </a>
 
+                    <div class="border-top border-secondary mt-3 pt-3"></div>
+                    <a asp-controller="Account" asp-action="Logout"
+                       onclick="return confirm('Bạn có chắc muốn đăng xuất không?')">
+                        <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                    </a>
                 </div>
             </nav>
 
-            <main class="col-md-9 col-lg-10 ms-sm-auto p-4">
-                @RenderBody()
+            <!-- Main Content -->
+            <main class="col-md-9 col-lg-10 ms-sm-auto p-0">
+                <!-- Top Navbar với thông tin user -->
+                <div class="navbar-top d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                        @ViewData["Title"] ?? "Bảng điều khiển"
+                    </h5>
+
+                    <!-- ===== THÔNG TIN NGƯỜI DÙNG ===== -->
+                    <div class="d-flex align-items-center gap-3">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <div class="user-info d-flex align-items-center">
+                                <div class="user-avatar">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div>
+                                    <strong>@User.FindFirst("FullName")?.Value</strong>
+                                    <br />
+                                    <small class="text-muted">
+                                        Vai trò: @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                                    </small>
+                                </div>
+                            </div>
+                            <a asp-controller="Account" asp-action="Logout"
+                               class="btn btn-outline-danger btn-sm"
+                               onclick="return confirm('Đăng xuất?')">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <!-- Content Body -->
+                <div class="p-4">
+                    @RenderBody()
+                </div>
             </main>
         </div>
     </div>
