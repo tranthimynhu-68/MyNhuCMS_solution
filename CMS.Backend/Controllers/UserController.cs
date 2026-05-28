@@ -90,7 +90,7 @@ namespace CMS.Backend.Controllers
 
             if (checkExist)
             {
-                ModelState.AddModelError("Username", "Tên đăng nhập này đã có người dùng!");
+                ModelState.AddModelError("Username", "Tên đăng nhập này đã có người dùng");
             }
 
             // Bỏ validate PasswordHash
