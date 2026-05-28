@@ -5,31 +5,30 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Backend.Controllers
 {
-    public class CategoryProductController : Controller
+    public class ProductCategoryController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public CategoryProductController(ApplicationDbContext context)
+        public ProductCategoryController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // ========== 1. DANH SÁCH ==========
+        // Hiển thị danh sách
         public IActionResult Index()
         {
-            // Sửa: CategoriesProducts (số nhiều)
             var data = _context.CategoriesProducts.ToList();
             return View(data);
         }
 
-        // ========== 2. THÊM MỚI - GET ==========
+        // Thêm mới - GET
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
-        // ========== 3. THÊM MỚI - POST ==========
+        // Thêm mới - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(CategoryProduct model)
@@ -43,61 +42,41 @@ namespace CMS.Backend.Controllers
             return View(model);
         }
 
-        // ========== 4. SỬA - GET ==========
+        // Sửa - GET
         [HttpGet]
         public IActionResult Edit(int id)
         {
             var category = _context.CategoriesProducts.Find(id);
-            if (category == null)
-            {
-                return NotFound();
-            }
+            if (category == null) return NotFound();
             return View(category);
         }
 
-        // ========== 5. SỬA - POST ==========
+        // Sửa - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, CategoryProduct model)
         {
-            if (id != model.Id)
-            {
-                return NotFound();
-            }
+            if (id != model.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(model);
-                    _context.SaveChanges();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.CategoriesProducts.Any(e => e.Id == id))
-                    {
-                        return NotFound();
-                    }
-                    throw;
-                }
+                _context.Update(model);
+                _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
             return View(model);
         }
 
-        // ========== 6. XÓA - GET ==========
+        // Xóa - GET
         [HttpGet]
         public IActionResult Delete(int id)
         {
             var category = _context.CategoriesProducts.Find(id);
-            if (category == null)
-            {
-                return NotFound();
-            }
+            if (category == null) return NotFound();
             return View(category);
         }
 
-        // ========== 7. XÓA - POST ==========
+        // Xóa - POST
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)

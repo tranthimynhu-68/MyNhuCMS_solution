@@ -1,0 +1,118 @@
+﻿@{
+    ViewData["Title"] = "Bảng điều khiển";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="bi bi-speedometer2 me-2 text-primary"></i>
+            TỔNG QUAN HỆ THỐNG
+        </h2>
+        <hr />
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Bài viết</h6>
+                        <h2 class="mb-0">@ViewBag.TotalPosts</h2>
+                    </div>
+                    <i class="bi bi-file-earmark-post fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Danh mục</h6>
+                        <h2 class="mb-0">@ViewBag.TotalCategories</h2>
+                    </div>
+                    <i class="bi bi-grid fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Sản phẩm</h6>
+                        <h2 class="mb-0">@ViewBag.TotalProducts</h2>
+                    </div>
+                    <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Khách hàng</h6>
+                        <h2 class="mb-0">@ViewBag.TotalCustomers</h2>
+                    </div>
+                    <i class="bi bi-people fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Đơn hàng</h6>
+                        <h2 class="mb-0">@ViewBag.TotalOrders</h2>
+                    </div>
+                    <i class="bi bi-cart fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2 text-primary"></i>
+                    Bài viết mới nhất
+                </h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tiêu đề</th>
+                            <th>Danh mục</th>
+                            <th>Ngày đăng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var post in (List<Post>)ViewBag.LatestPosts)
+                        {
+                            <tr>
+                                <td>@post.Id</td>
+                                <td>@post.Title</td>
+                                <td>@(post.Category?.Name ?? "Chưa có")</td>
+                                <td>@post.CreatedDate.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

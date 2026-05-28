@@ -9,22 +9,43 @@ namespace CMS.Backend.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        // Tiêm DbContext vào Controller
         public HomeController(ApplicationDbContext context)
         {
             _context = context;
         }
 
+        // Trang chủ - Hiển thị 3 bài viết mới nhất
         public IActionResult Index()
         {
-            // LINQ: Lấy 3 bài viết mới nhất
             var latestPosts = _context.Posts
-                .Include(p => p.Category)          // Lấy kèm tên danh mục
-                .OrderByDescending(p => p.CreatedDate) // Sắp xếp mới nhất lên đầu
-                .Take(3)                            // Chỉ lấy 3 bản tin đầu tiên
+                .Include(p => p.Category)
+                .OrderByDescending(p => p.CreatedDate)
+                .Take(3)
                 .ToList();
 
             return View(latestPosts);
+        }
+
+        // Dashboard - Trang tổng quan Admin
+        public IActionResult Dashboard()
+        {
+            // Thống kê số lượng
+            var stats = new
+            {
+                TotalPosts = _context.Posts.Count(),
+                TotalCategories = _context.Categories.Count(),
+                TotalProducts = _context.Products.Count(),
+                TotalCustomers = _context.Customers.Count(),
+                TotalOrders = _context.Orders.Count()
+            };
+
+            ViewBag.TotalPosts = stats.TotalPosts;
+            ViewBag.TotalCategories = stats.TotalCategories;
+            ViewBag.TotalProducts = stats.TotalProducts;
+            ViewBag.TotalCustomers = stats.TotalCustomers;
+            ViewBag.TotalOrders = stats.TotalOrders;
+
+            return View();
         }
 
         public IActionResult Privacy()
