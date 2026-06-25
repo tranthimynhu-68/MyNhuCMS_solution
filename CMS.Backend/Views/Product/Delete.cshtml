@@ -1,0 +1,20 @@
+﻿@model CMS.Data.Entities.Product
+
+<h3>Bạn có chắc muốn xóa?</h3>
+
+<div class="alert alert-danger">
+    @Model.Name
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <button class="btn btn-danger">
+        Xóa
+    </button>
+
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Hủy
+    </a>
+</form>

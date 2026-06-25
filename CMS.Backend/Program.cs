@@ -6,17 +6,15 @@ using CMS.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==============================================================
-// 1. KHU VỰC ĐĂNG KÝ DỊCH VỤ
+// 1. ĐĂNG KÝ DỊCH VỤ
 // ==============================================================
 
-// MVC + API
 builder.Services.AddControllersWithViews();
 
-// DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Xác thực Cookie
+// Authentication - Cookie cho MVC
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -24,6 +22,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;  // Quan trọng
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 // Swagger
@@ -38,21 +38,24 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// CORS
+// ==============================================================
+// CORS - QUAN TRỌNG
+// ==============================================================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:3000") // Frontend URL
+              .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowCredentials(); // Cho phép gửi cookie
     });
 });
 
 var app = builder.Build();
 
 // ==============================================================
-// 2. KHU VỰC CẤU HÌNH MIDDLEWARE
+// 2. MIDDLEWARE - THỨ TỰ RẤT QUAN TRỌNG
 // ==============================================================
 
 if (!app.Environment.IsDevelopment())
@@ -63,7 +66,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
+
+// ==============================================================
+// CORS PHẢI ĐẶT Ở ĐÂY (SAU UseRouting, TRƯỚC Auth)
+// ==============================================================
+app.UseCors("AllowReactApp");
 
 // Swagger
 app.UseSwagger();
@@ -73,16 +82,15 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-app.UseCors("AllowAll");
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthentication();  // ← SAU CORS
+app.UseAuthorization();   // ← SAU Authentication
 
 // ==============================================================
-// 3. KHU VỰC ĐỊNH TUYẾN
+// 3. ĐỊNH TUYẾN
 // ==============================================================
 
-app.MapControllers();      // API Controllers
-app.MapControllerRoute(    // MVC Controllers
+app.MapControllers();
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 

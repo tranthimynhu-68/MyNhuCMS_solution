@@ -14,9 +14,13 @@ namespace CMS.Backend.Controllers
             _context = context;
         }
 
-        // Trang chủ - Hiển thị 3 bài viết mới nhất
+        // ====================================================
+        // TRANG CHỦ - HIỂN THỊ 3 BÀI VIẾT MỚI NHẤT
+        // GET: /Home/Index
+        // ====================================================
         public IActionResult Index()
         {
+            // ✅ Lấy 3 bài viết mới nhất
             var latestPosts = _context.Posts
                 .Include(p => p.Category)
                 .OrderByDescending(p => p.CreatedDate)
@@ -26,29 +30,52 @@ namespace CMS.Backend.Controllers
             return View(latestPosts);
         }
 
-        // Dashboard - Trang tổng quan Admin
+        // ====================================================
+        // DASHBOARD - TRANG TỔNG QUAN ADMIN
+        // GET: /Home/Dashboard
+        // ====================================================
         public IActionResult Dashboard()
         {
             // Thống kê số lượng
-            var stats = new
-            {
-                TotalPosts = _context.Posts.Count(),
-                TotalCategories = _context.Categories.Count(),
-                TotalProducts = _context.Products.Count(),
-                TotalCustomers = _context.Customers.Count(),
-                TotalOrders = _context.Orders.Count()
-            };
+            var totalPosts = _context.Posts.Count();
+            var totalCategories = _context.Categories.Count();
+            var totalProducts = _context.Products.Count();
+            var totalCustomers = _context.Customers.Count();
+            var totalOrders = _context.Orders.Count();
 
-            ViewBag.TotalPosts = stats.TotalPosts;
-            ViewBag.TotalCategories = stats.TotalCategories;
-            ViewBag.TotalProducts = stats.TotalProducts;
-            ViewBag.TotalCustomers = stats.TotalCustomers;
-            ViewBag.TotalOrders = stats.TotalOrders;
+            // Gửi dữ liệu qua ViewBag
+            ViewBag.TotalPosts = totalPosts;
+            ViewBag.TotalCategories = totalCategories;
+            ViewBag.TotalProducts = totalProducts;
+            ViewBag.TotalCustomers = totalCustomers;
+            ViewBag.TotalOrders = totalOrders;
+
+            // Lấy 5 đơn hàng gần đây
+            var recentOrders = _context.Orders
+                .Include(o => o.Customer)
+                .OrderByDescending(o => o.OrderDate)
+                .Take(5)
+                .ToList();
+
+            ViewBag.RecentOrders = recentOrders;
 
             return View();
         }
 
+        // ====================================================
+        // TRANG PRIVACY
+        // GET: /Home/Privacy
+        // ====================================================
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        // ====================================================
+        // TRANG LỖI 404
+        // GET: /Home/Error
+        // ====================================================
+        public IActionResult Error()
         {
             return View();
         }
